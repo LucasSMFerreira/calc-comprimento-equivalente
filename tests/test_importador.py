@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import openpyxl
 
-from app.dados.importador import gerar_id, importar_planilha, ler_numero
+from app.dados.importador import comparar, gerar_id, importar_planilha, ler_numero
 
 
 def test_planilha_do_professor_e_valida(importacao):
@@ -63,3 +63,12 @@ def test_erros_apontam_a_celula():
     assert not resultado.valida
     assert any("E2" in erro for erro in resultado.erros)
     assert any("Plástico" in erro for erro in resultado.erros)
+
+def test_comparar_mostra_o_que_mudou(tabela):
+    nova = importar_planilha(planilha([
+        ["Descrição", "Foto", "Material", '3/4"'],
+        ["Joelho 90°", None, "PVC", "1,30"],
+        ["Trecho Reto", None, "PVC", 1],
+    ])).tabela
+    mudancas = comparar(tabela, nova, limite=1000)
+    assert 'Alterado: joelho-90 (PVC) 3/4": 1,20 -> 1,30 m' in mudancas

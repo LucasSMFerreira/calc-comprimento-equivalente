@@ -117,3 +117,22 @@ def importar_planilha(conteudo: bytes) -> Importacao:
     if not resultado.erros:
         resultado.tabela = TabelaEquivalentes(diametros, list(conexoes.values()), valores)
     return resultado
+
+def comparar(antiga: TabelaEquivalentes, nova: TabelaEquivalentes, limite: int = 30) -> list[str]:
+    """Lista legível do que muda entre duas tabelas (usada na pré-visualização)."""
+    mudancas = []
+    for chave in sorted(set(antiga.valores) | set(nova.valores)):
+        velho, novo = antiga.valores.get(chave), nova.valores.get(chave)
+        if velho == novo:
+            continue
+        conexao_id, material, diametro = chave
+        descricao = f"{conexao_id} ({material}) {diametro}"
+        if velho is None:
+            mudancas.append(f"Novo: {descricao} = {br(novo)} m")
+        elif novo is None:
+            mudancas.append(f"Removido: {descricao}")
+        else:
+            mudancas.append(f"Alterado: {descricao}: {br(velho)} -> {br(novo)} m")
+    if len(mudancas) > limite:
+        return mudancas[:limite] + [f"... e mais {len(mudancas) - limite} mudanças."]
+    return mudancas
