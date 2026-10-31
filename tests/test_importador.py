@@ -72,3 +72,10 @@ def test_comparar_mostra_o_que_mudou(tabela):
     ])).tabela
     mudancas = comparar(tabela, nova, limite=1000)
     assert 'Alterado: joelho-90 (PVC) 3/4": 1,20 -> 1,30 m' in mudancas
+
+
+def test_toda_linha_da_planilha_tem_foto(importacao):
+    tabela = importacao.tabela
+    for conexao in tabela.conexoes:
+        for material in tabela.materiais_de(conexao.id):
+            assert (conexao.id, material) in importacao.fotos, f"Sem foto: {conexao.nome} ({material})"
