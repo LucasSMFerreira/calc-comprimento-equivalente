@@ -3,6 +3,7 @@ from decimal import Decimal
 import pytest
 
 from app.dominio.calculo import Item, agrupar, calcular
+from app.dominio.diametros import mm_para_polegada
 from app.dominio.erros import ErroDominio
 
 EXERCICIO_5 = [
@@ -56,3 +57,13 @@ def test_itens_invalidos_dao_erro_claro(tabela, item, mensagem):
 def test_diametro_inexistente(tabela):
     with pytest.raises(ErroDominio, match="Diâmetro"):
         calcular(EXERCICIO_5, '7"', tabela)
+
+
+@pytest.mark.parametrize("mm, padrao, esperado", [(25, "pvc", '3/4"'), (25, "dn", '1"'), (110, "pvc", '4"')])
+def test_conversao_de_milimetros(mm, padrao, esperado):
+    assert mm_para_polegada(mm, padrao) == esperado
+
+
+def test_milimetro_fora_da_lista():
+    with pytest.raises(ErroDominio):
+        mm_para_polegada(26, "pvc")
