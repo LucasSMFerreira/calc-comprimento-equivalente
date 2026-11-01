@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gerenciar tabela base</title>
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+  <header class="topo">
+    <div>
+      <h1>Gerenciar tabela base</h1>
+      <p>Troque a planilha de comprimentos equivalentes sem mexer no código</p>
+    </div>
+    <a class="link" href="/">Voltar para a calculadora</a>
+  </header>
+  <main>
+    <section class="cartao">
+      <h2><span class="passo">1</span> Senha de administrador</h2>
+      <input id="token" type="password" placeholder="ADMIN_TOKEN">
+    </section>
+
+    <section class="cartao">
+      <h2><span class="passo">2</span> Enviar nova planilha</h2>
+      <p class="dica">Mesmo formato da original: Descrição | Foto | Material | diâmetros. Dica: exporte a versão atual, edite e envie de volta.</p>
+      <div class="linha">
+        <label>Nome da versão<input id="nome" placeholder="Ex.: Tabela corrigida"></label>
+        <label>Arquivo .xlsx<input id="arquivo" type="file" accept=".xlsx"></label>
+        <button id="btn-previa">Pré-visualizar</button>
+      </div>
+      <div id="previa" class="painel" hidden></div>
+    </section>
+
+    <section class="cartao">
+      <h2><span class="passo">3</span> Versões salvas</h2>
+      <div class="rolagem">
+        <table>
+          <thead><tr><th>Versão</th><th>Nome</th><th>Criada em</th><th>Situação</th><th></th></tr></thead>
+          <tbody id="versoes"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <div id="aviso" class="aviso" hidden></div>
+  <script src="admin.js"></script>
+</body>
+</html>
