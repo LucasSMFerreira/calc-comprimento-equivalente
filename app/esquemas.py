@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from pydantic import BaseModel, Field
-from pytest import Class
+
 
 class ItemEntrada(BaseModel):
     conexao_id: str

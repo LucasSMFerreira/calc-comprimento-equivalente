@@ -126,7 +126,7 @@ async def previa_tabela(arquivo: UploadFile = File(...), r: Repositorio = Depend
         "conexoes": len(importacao.tabela.conexoes) if importacao.valida else 0,
         "diametros": importacao.tabela.diametros if importacao.valida else [],
         "fotos": len(importacao.fotos),
-        "mudancas": comparar(___, importacao.tabela) if importacao.valida else [],
+        "mudancas": comparar(atual, importacao.tabela) if importacao.valida else [],
     }
 
 
