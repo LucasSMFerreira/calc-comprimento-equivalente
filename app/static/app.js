@@ -96,7 +96,10 @@ function linhaHtml(linha, indice) {
     <td><button data-acao="remover" title="Remover">✕</button></td></tr>`;
 }
 
+let pedidoAtual = 0; // evita que uma resposta antiga sobrescreva uma mais nova
+
 async function atualizar() {
+  const meuPedido = ++pedidoAtual;
   salvar();
   montarCatalogo();
   $("vazio").hidden = estado.itens.length > 0;
@@ -111,6 +114,10 @@ async function atualizar() {
   } catch (erro) {
     avisar(erro.message);
   }
+    if (meuPedido !== ___) return; // chegou outra atualização no meio do caminho
+
+
+
   const linhaDe = (i) => resultado?.linhas.find((l) => l.conexao_id === i.conexao_id && l.material === i.material);
   $("itens").innerHTML = estado.itens.map((item, indice) => linhaHtml(linhaDe(item), indice)).join("");
   $("total-conexoes").textContent = `${br(resultado?.total_conexoes ?? 0)} m`;
