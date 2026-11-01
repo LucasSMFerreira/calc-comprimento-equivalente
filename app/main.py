@@ -73,9 +73,9 @@ def resultado_json(resultado: Resultado) -> dict:
 # ---------- calculadora ----------
 
 @app.get("/api/saude")
-def saude():
-    return {"status": "ok"}
-
+def saude(r: Repositorio = Depends(repo)):
+    versao = r.versao_ativa()
+    return {"status": "ok", "versao_ativa": versao["id"] if versao else None}
 
 @app.get("/api/tabela")
 def obter_tabela(r: Repositorio = Depends(repo)):

@@ -49,3 +49,7 @@ def test_salvar_nova_tabela_e_voltar_para_antiga(cliente):
     assert cliente.get("/api/tabela").json()["versao"]["id"] == nova["id"]
     cliente.post("/api/tabelas/1/ativar", headers=ADMIN)
     assert cliente.get("/api/tabela").json()["versao"]["id"] == 1
+
+
+def test_saude_mostra_versao_ativa(cliente):
+    assert cliente.get("/api/saude").json() == {"status": "ok", "versao_ativa": 1}
