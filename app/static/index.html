@@ -1,1 +1,82 @@
-<h1>Calculadora em construção</h1>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calculadora de Comprimento Equivalente</title>
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+  <header class="topo">
+    <div>
+      <h1>Calculadora de Comprimento Equivalente</h1>
+      <p>Perda de carga localizada convertida em metros de tubo reto</p>
+    </div>
+    <a class="link" href="admin.html">Gerenciar tabela</a>
+  </header>
+
+  <main>
+    <section class="cartao">
+      <h2><span class="passo">1</span> Tubulação</h2>
+      <div class="linha">
+        <div class="alternar" role="group" aria-label="Unidade">
+          <button data-unidade="pol" class="ativo">Polegadas</button>
+          <button data-unidade="mm">Milímetros</button>
+        </div>
+        <label id="campo-padrao" hidden>Padrão
+          <select id="padrao"></select>
+        </label>
+        <label>Diâmetro
+          <select id="diametro"></select>
+        </label>
+        <span id="equivale" class="dica"></span>
+      </div>
+    </section>
+
+    <section class="cartao">
+      <h2><span class="passo">2</span> Toque nas conexões para adicionar</h2>
+      <input id="busca" type="search" placeholder="Buscar conexão (ex.: joelho, registro, tubo)">
+      <div id="catalogo" class="catalogo"></div>
+    </section>
+
+    <section class="cartao">
+      <h2><span class="passo">3</span> Cálculo do comprimento equivalente</h2>
+      <div class="acoes">
+        <button id="btn-texto">Descrever em texto</button>
+        <label class="botao">Importar planilha<input id="arquivo-itens" type="file" accept=".xlsx" hidden></label>
+        <a class="botao" href="/api/itens/modelo">Baixar modelo</a>
+        <button id="btn-pdf" class="principal">Memorial em PDF</button>
+        <button id="btn-limpar" class="perigo">Limpar</button>
+      </div>
+
+      <div id="painel-texto" class="painel" hidden>
+        <textarea id="texto" rows="3" placeholder="Ex.: 1 entrada normal, 5 cotovelos 90 de PVC, 2 registros de gaveta de metal e 10,7 m de tubo"></textarea>
+        <button id="btn-interpretar" class="principal">Interpretar</button>
+      </div>
+
+      <div id="confirmacao" class="painel" hidden></div>
+
+      <div class="rolagem">
+        <table>
+          <thead>
+            <tr><th>Foto</th><th>Conexão</th><th>Material</th><th>Quantidade</th>
+                <th>L eq. (m)</th><th>Total (m)</th><th></th></tr>
+          </thead>
+          <tbody id="itens"></tbody>
+        </table>
+      </div>
+      <p id="vazio" class="dica">Nenhum item ainda. Toque numa conexão acima ou use "Descrever em texto".</p>
+
+      <div class="totais">
+        <div><small>Conexões</small><strong id="total-conexoes">0,00 m</strong></div>
+        <div><small>Trechos retos</small><strong id="total-retos">0,00 m</strong></div>
+        <div class="soma"><small>Σ Comprimento equivalente total</small><strong id="total">0,00 m</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="aviso" class="aviso" hidden></div>
+  <footer>Tabela em uso: <span id="versao"></span> · Código aberto (MIT)</footer>
+  <script src="app.js"></script>
+</body>
+</html>
