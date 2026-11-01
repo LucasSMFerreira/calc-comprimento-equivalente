@@ -73,9 +73,9 @@ def resultado_json(resultado: Resultado) -> dict:
 # ---------- calculadora ----------
 
 @app.get("/api/saude")
-def saude():
-    return {"status": "ok"}
-
+def saude(r: Repositorio = Depends(repo)):
+    versao = r.versao_ativa()
+    return {"status": "ok", "versao_ativa": versao["id"] if versao else None}
 
 @app.get("/api/tabela")
 def obter_tabela(r: Repositorio = Depends(repo)):
@@ -108,6 +108,19 @@ def api_calcular(pedido: PedidoCalculo, r: Repositorio = Depends(repo)):
     _, tabela = tabela_ativa(r)
     itens = [Item(i.conexao_id, i.material, i.quantidade) for i in pedido.itens]
     return resultado_json(calcular(itens, pedido.diametro, tabela))
+
+
+@app.get("/api/tabela/{conexao_id}")
+def valores_da_conexao(conexao_id: str, r: Repositorio = Depends(repo)):
+    _, tabela = tabela_ativa(r)
+    if conexao_id not in {c.id for c in tabela.conexoes}:
+        raise HTTPException(404, "Conexão não encontrada.")
+    return {
+        "id": conexao_id,
+        "nome": tabela.nome_de(conexao_id),
+        "valores": {m: {d: float(tabela.valores[(conexao_id, m, d)]) for d in tabela.diametros}
+                    for m in tabela.materiais_de(conexao_id)},
+    }
 
 
 @app.get("/api/tabelas")
