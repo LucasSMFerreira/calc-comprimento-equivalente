@@ -110,6 +110,19 @@ def api_calcular(pedido: PedidoCalculo, r: Repositorio = Depends(repo)):
     return resultado_json(calcular(itens, pedido.diametro, tabela))
 
 
+@app.get("/api/tabela/{conexao_id}")
+def valores_da_conexao(conexao_id: str, r: Repositorio = Depends(repo)):
+    _, tabela = tabela_ativa(r)
+    if conexao_id not in {c.id for c in tabela.conexoes}:
+        raise HTTPException(404, "Conexão não encontrada.")
+    return {
+        "id": conexao_id,
+        "nome": tabela.nome_de(conexao_id),
+        "valores": {m: {d: float(tabela.valores[(conexao_id, m, d)]) for d in tabela.diametros}
+                    for m in tabela.materiais_de(conexao_id)},
+    }
+
+
 @app.get("/api/tabelas")
 def listar_tabelas(r: Repositorio = Depends(repo)):
     return r.listar_versoes()
