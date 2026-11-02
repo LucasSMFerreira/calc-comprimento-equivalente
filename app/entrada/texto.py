@@ -27,7 +27,7 @@ def ler_texto(texto: str, tabela: TabelaEquivalentes) -> Leitura:
     for parte in SEPARADORES.split(texto):
         parte = parte.strip(" .")
         if not re.search(r"\d", parte):  # sem número não é item (ex.: "Tubulação de")
-            ___
+            continue
         casou = PADRAO_ITEM.match(parte)
         if not casou:
             leitura.pendentes.append(f"{parte}: não achei a quantidade")
