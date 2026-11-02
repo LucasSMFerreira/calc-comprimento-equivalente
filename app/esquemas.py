@@ -12,3 +12,7 @@ class ItemEntrada(BaseModel):
 class PedidoCalculo(BaseModel):
     diametro: str
     itens: list[ItemEntrada] = []
+
+
+class PedidoTexto(BaseModel):
+    texto: str = Field(min_length=3, max_length=2000)
