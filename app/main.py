@@ -16,6 +16,7 @@ from app.entrada.itens import Leitura
 from app.entrada.planilha_itens import gerar_modelo, ler_planilha_itens
 from app.entrada.texto import ler_texto
 from app.esquemas import PedidoCalculo, PedidoTexto
+from app.relatorio.memorial import gerar_memorial
 
 XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
@@ -125,6 +126,23 @@ def api_calcular(pedido: PedidoCalculo, r: Repositorio = Depends(repo)):
     _, tabela = tabela_ativa(r)
     itens = [Item(i.conexao_id, i.material, i.quantidade) for i in pedido.itens]
     return resultado_json(calcular(itens, pedido.diametro, tabela))
+
+
+@app.post("/api/memorial")
+def api_memorial(pedido: PedidoCalculo, r: Repositorio = Depends(repo)):
+    versao, tabela = tabela_ativa(r)
+    itens = [Item(i.conexao_id, i.material, i.quantidade) for i in pedido.itens]
+    if not itens:
+        raise ErroDominio("Adicione pelo menos um item antes de gerar o memorial.")
+    resultado = calcular(itens, pedido.diametro, tabela)
+
+    def foto_de(conexao_id: str, material: str):
+        foto = r.foto(versao["id"], conexao_id, material)
+        return foto[0] if foto else None
+
+    pdf = gerar_memorial(resultado, f"v{versao['id']} - {versao['nome']}", foto_de)
+    return Response(pdf, media_type="application/pdf",
+                    headers={"Content-Disposition": 'attachment; filename="memorial-de-calculo.pdf"'})
 
 
 @app.get("/api/tabela/{conexao_id}")

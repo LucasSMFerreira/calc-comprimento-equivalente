@@ -34,6 +34,12 @@ def test_erro_de_regra_vira_422_com_mensagem(cliente):
     assert "Registro de Globo" in resposta.json()["detail"]
 
 
+def test_memorial_em_pdf(cliente):
+    resposta = cliente.post("/api/memorial", json=EXERCICIO_5)
+    assert resposta.headers["content-type"] == "application/pdf"
+    assert resposta.content.startswith(b"%PDF")
+
+
 def test_foto_da_conexao(cliente):
     assert cliente.get("/api/fotos/1/joelho-90/PVC").status_code == 200
     assert cliente.get("/api/fotos/1/abacaxi/PVC").status_code == 404
