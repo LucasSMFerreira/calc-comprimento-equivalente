@@ -11,6 +11,7 @@ from app.dados.repositorio import Repositorio
 from app.dominio.calculo import Item, Resultado, calcular
 from app.dominio.diametros import PADROES_MM
 from app.dominio.erros import ErroDominio
+from app.entrada.ia import IAIndisponivel, interpretar_com_ia
 from app.entrada.itens import Leitura
 from app.entrada.planilha_itens import gerar_modelo, ler_planilha_itens
 from app.entrada.texto import ler_texto
@@ -86,7 +87,12 @@ def leitura_json(leitura: Leitura) -> dict:
 @app.get("/api/saude")
 def saude(r: Repositorio = Depends(repo)):
     versao = r.versao_ativa()
-    return {"status": "ok", "versao_ativa": versao["id"] if versao else None}
+    return {
+        "status": "ok",
+        "versao_ativa": versao["id"] if versao else None,
+        "ia_configurada": bool(config.IA_URL),
+    }
+
 
 @app.get("/api/tabela")
 def obter_tabela(r: Repositorio = Depends(repo)):
@@ -151,7 +157,14 @@ async def importar_itens(arquivo: UploadFile = File(...), r: Repositorio = Depen
 @app.post("/api/itens/texto")
 def interpretar_texto(pedido: PedidoTexto, r: Repositorio = Depends(repo)):
     _, tabela = tabela_ativa(r)
-    return leitura_json(ler_texto(pedido.texto, tabela)) | {"usou_ia": False}
+    leitura = ler_texto(pedido.texto, tabela)  # 1º: regras, rápido e sem IA
+    resposta = leitura_json(leitura) | {"usou_ia": False}
+    if pedido.usar_ia or leitura.pendentes or not leitura.itens:  # 2º: IA se pedida ou se faltou algo
+        try:
+            resposta = leitura_json(interpretar_com_ia(pedido.texto, tabela)) | {"usou_ia": True}
+        except IAIndisponivel as erro:
+            resposta["avisos"].append(f"{erro} Mostrando só o que as regras entenderam.")
+    return resposta
 
 
 @app.get("/api/tabelas")

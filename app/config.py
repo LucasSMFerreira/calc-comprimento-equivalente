@@ -10,3 +10,5 @@ BANCO = os.getenv("BANCO", str(RAIZ / "data" / "calculadora.db"))
 TABELA_PADRAO = RAIZ / "data" / "tabela_padrao.xlsx"
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
 PORTA = int(os.getenv("PORTA", "8080"))
+IA_URL = os.getenv("IA_URL", "")
+IA_TOKEN = os.getenv("IA_TOKEN", "")

@@ -1,3 +1,7 @@
+import httpx
+
+from app import config
+
 EXERCICIO_5 = {
     "diametro": '3/4"',
     "itens": [
@@ -52,8 +56,7 @@ def test_salvar_nova_tabela_e_voltar_para_antiga(cliente):
 
 
 def test_saude_mostra_versao_ativa(cliente):
-    assert cliente.get("/api/saude").json() == {"status": "ok", "versao_ativa": 1}
-
+    assert cliente.get("/api/saude").json() == {"status": "ok", "versao_ativa": 1, "ia_configurada": False}
 
 def test_valores_de_uma_conexao(cliente):
     dados = cliente.get("/api/tabela/joelho-90").json()
@@ -77,3 +80,40 @@ def test_texto_do_exercicio_5_pela_api(cliente):
     resposta = cliente.post("/api/itens/texto", json={"texto": texto}).json()
     assert len(resposta["itens"]) == 4
     assert resposta["pendentes"] == []
+
+
+def test_texto_sem_ia_usa_so_as_regras(cliente):
+    resposta = cliente.post("/api/itens/texto", json={"texto": "5 joelhos 90 e 3 mangueiras"}).json()
+    assert resposta["usou_ia"] is False
+    assert len(resposta["itens"]) == 1
+    assert "IA não está configurada" in resposta["avisos"][0]
+
+
+def test_texto_com_ia_simulada(cliente, monkeypatch):
+    monkeypatch.setattr(config, "IA_URL", "http://ia-falsa")
+
+    def post_falso(url, **kwargs):
+        dados = {"diametro": '1"', "itens": [
+            {"conexao_id": "joelho-90", "material": "Metal", "quantidade": 2},
+            {"conexao_id": "inventado", "material": "PVC", "quantidade": 1}]}
+        return httpx.Response(200, json=dados, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(httpx, "post", post_falso)
+    resposta = cliente.post("/api/itens/texto", json={"texto": "duas mangueiras de ferro"}).json()
+    assert resposta["usou_ia"] is True
+    assert resposta["diametro"] == '1"'
+    assert resposta["itens"][0]["conexao_id"] == "joelho-90"
+    assert "resposta inválida" in resposta["pendentes"][0]  # a IA inventou; o sistema barrou
+
+
+def test_usar_ia_forca_a_ia_mesmo_quando_as_regras_entendem(cliente, monkeypatch):
+    monkeypatch.setattr(config, "IA_URL", "http://ia-falsa")
+    chamadas = []
+
+    def post_falso(url, **kwargs):
+        chamadas.append(url)
+        return httpx.Response(200, json={"diametro": "", "itens": []}, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(httpx, "post", post_falso)
+    cliente.post("/api/itens/texto", json={"texto": "5 joelhos 90", "usar_ia": True})
+    assert chamadas == ["http://ia-falsa/interpretar"]
