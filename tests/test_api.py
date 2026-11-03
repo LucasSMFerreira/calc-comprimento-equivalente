@@ -64,3 +64,16 @@ def test_valores_de_uma_conexao(cliente):
 
 def test_conexao_inexistente_da_404(cliente):
     assert cliente.get("/api/tabela/abacaxi").status_code == 404
+
+
+def test_modelo_e_planilha_de_itens(cliente):
+    modelo = cliente.get("/api/itens/modelo").content
+    resposta = cliente.post("/api/itens/planilha", files={"arquivo": ("itens.xlsx", modelo)}).json()
+    assert [i["conexao_id"] for i in resposta["itens"]] == ["joelho-90", "trecho-reto"]
+
+
+def test_texto_do_exercicio_5_pela_api(cliente):
+    texto = "1 entrada normal, 5 cotovelos 90, 2 registros de gaveta de metal e 10,7 m de tubo"
+    resposta = cliente.post("/api/itens/texto", json={"texto": texto}).json()
+    assert len(resposta["itens"]) == 4
+    assert resposta["pendentes"] == []

@@ -11,7 +11,10 @@ from app.dados.repositorio import Repositorio
 from app.dominio.calculo import Item, Resultado, calcular
 from app.dominio.diametros import PADROES_MM
 from app.dominio.erros import ErroDominio
-from app.esquemas import PedidoCalculo
+from app.entrada.itens import Leitura
+from app.entrada.planilha_itens import gerar_modelo, ler_planilha_itens
+from app.entrada.texto import ler_texto
+from app.esquemas import PedidoCalculo, PedidoTexto
 
 XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
@@ -69,6 +72,14 @@ def resultado_json(resultado: Resultado) -> dict:
         "total": float(resultado.total),
     }
 
+def leitura_json(leitura: Leitura) -> dict:
+    return {
+        "diametro": leitura.diametro,
+        "itens": [{"conexao_id": i.conexao_id, "material": i.material,
+                   "quantidade": float(i.quantidade), "original": i.original} for i in leitura.itens],
+        "pendentes": leitura.pendentes,
+        "avisos": leitura.avisos,
+    }
 
 # ---------- calculadora ----------
 
@@ -121,6 +132,26 @@ def valores_da_conexao(conexao_id: str, r: Repositorio = Depends(repo)):
         "valores": {m: {d: float(tabela.valores[(conexao_id, m, d)]) for d in tabela.diametros}
                     for m in tabela.materiais_de(conexao_id)},
     }
+
+# ---------- entrada de dados ----------
+
+@app.get("/api/itens/modelo")
+def baixar_modelo(r: Repositorio = Depends(repo)):
+    _, tabela = tabela_ativa(r)
+    return Response(gerar_modelo(tabela), media_type=XLSX,
+                    headers={"Content-Disposition": 'attachment; filename="modelo-itens.xlsx"'})
+
+
+@app.post("/api/itens/planilha")
+async def importar_itens(arquivo: UploadFile = File(...), r: Repositorio = Depends(repo)):
+    _, tabela = tabela_ativa(r)
+    return leitura_json(ler_planilha_itens(await arquivo.read(), tabela))
+
+
+@app.post("/api/itens/texto")
+def interpretar_texto(pedido: PedidoTexto, r: Repositorio = Depends(repo)):
+    _, tabela = tabela_ativa(r)
+    return leitura_json(ler_texto(pedido.texto, tabela)) | {"usou_ia": False}
 
 
 @app.get("/api/tabelas")
