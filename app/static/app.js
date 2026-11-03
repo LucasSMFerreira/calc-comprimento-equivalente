@@ -114,7 +114,7 @@ async function atualizar() {
   } catch (erro) {
     avisar(erro.message);
   }
-    if (meuPedido !== ___) return; // chegou outra atualização no meio do caminho
+     if (meuPedido !== pedidoAtual) return; // chegou outra atualização no meio do caminho 
 
 
 
