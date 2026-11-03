@@ -24,6 +24,7 @@ def cliente(tmp_path, monkeypatch):
     """App de verdade, mas com banco temporário (cada teste começa do zero)."""
     monkeypatch.setattr(config, "BANCO", str(tmp_path / "teste.db"))
     monkeypatch.setattr(config, "ADMIN_TOKEN", "senha-teste")
+    monkeypatch.setattr(config, "IA_URL", "")
     from app.main import app
 
     with TestClient(app) as cliente:

@@ -207,7 +207,7 @@ function ligarEventos() {
       const resposta = await api("/api/itens/texto", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ texto: $("texto").value }),
+        body: JSON.stringify({ texto: $("texto").value, usar_ia: $("usar-ia").checked }),
       });
       mostrarConfirmacao(await resposta.json());
     } catch (erro) {
