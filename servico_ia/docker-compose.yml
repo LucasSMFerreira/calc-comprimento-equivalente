@@ -1,0 +1,6 @@
+services:
+  servico-ia:
+    build: .
+    network_mode: host          # enxerga o Ollama em 127.0.0.1:11434
+    env_file: .env              # IA_TOKEN e MODELO
+    restart: unless-stopped
