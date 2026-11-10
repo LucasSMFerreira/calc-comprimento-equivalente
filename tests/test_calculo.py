@@ -2,7 +2,7 @@ from decimal import Decimal
 
 import pytest
 
-from app.dominio.calculo import Item, agrupar, calcular
+from app.dominio.calculo import Item, agrupar, calcular, de_trechos
 from app.dominio.diametros import mm_para_polegada
 from app.dominio.erros import ErroDominio
 
@@ -67,3 +67,25 @@ def test_conversao_de_milimetros(mm, padrao, esperado):
 def test_milimetro_fora_da_lista():
     with pytest.raises(ErroDominio):
         mm_para_polegada(26, "pvc")
+
+
+def test_trechos_retos_sao_somados(tabela):
+    trecho = de_trechos("PVC", [Decimal("1.20"), Decimal("1.30"), Decimal("3"), Decimal("10")])
+    resultado = calcular([trecho], '3/4"', tabela)
+    assert resultado.total_trechos_retos == Decimal("15.50")
+    assert resultado.linhas[0].trechos == (Decimal("1.20"), Decimal("1.30"), Decimal("3"), Decimal("10"))
+
+
+def test_agrupar_junta_os_pedacos_de_trecho_reto():
+    itens = [de_trechos("PVC", [Decimal("1.2")]), Item("trecho-reto", "PVC", Decimal("3"))]
+    assert agrupar(itens) == [Item("trecho-reto", "PVC", Decimal("4.2"), (Decimal("1.2"), Decimal("3")))]
+
+
+def test_trecho_com_comprimento_zero_da_erro(tabela):
+    with pytest.raises(ErroDominio, match="maior que zero"):
+        calcular([de_trechos("PVC", [Decimal("2"), Decimal("0")])], '3/4"', tabela)
+
+
+def test_so_trecho_reto_aceita_pedacos(tabela):
+    with pytest.raises(ErroDominio, match="Só o trecho reto"):
+        calcular([Item("joelho-90", "PVC", Decimal("2"), (Decimal("1"), Decimal("1")))], '3/4"', tabela)
