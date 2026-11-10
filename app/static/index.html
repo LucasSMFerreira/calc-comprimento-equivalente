@@ -57,6 +57,19 @@
 
       <div id="confirmacao" class="painel" hidden></div>
 
+            <div id="painel-trechos" class="painel" hidden>
+        <strong id="trechos-titulo">Trechos retos</strong>
+        <div class="linha">
+          <label>Comprimento do trecho (m)
+            <input id="trecho-valor" type="text" inputmode="decimal" placeholder="Ex.: 1,20">
+          </label>
+          <button id="btn-somar-trecho" class="principal">Somar</button>
+        </div>
+        <ul id="lista-trechos" class="trechos"></ul>
+        <span>Total: <strong id="trechos-total">0,00 m</strong></span>
+        <div class="acoes"><button id="btn-fechar-trechos">Concluir</button></div>
+      </div>
+
       <div class="rolagem">
         <table>
           <thead>

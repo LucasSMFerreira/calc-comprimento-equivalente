@@ -137,3 +137,18 @@ def test_sem_admin_token_gerenciar_tabela_e_livre(cliente, monkeypatch):
     resposta = cliente.post("/api/tabelas/previa", files={"arquivo": ("nova.xlsx", planilha)})
     assert resposta.status_code == 200
     assert cliente.get("/api/saude").json()["admin_protegido"] is False
+
+
+def test_calcular_com_trechos_retos(cliente):
+    pedido = {"diametro": '3/4"', "itens": [
+        {"conexao_id": "trecho-reto", "material": "PVC", "quantidade": 15.5, "trechos": [1.2, 1.3, 3, 10]}]}
+    resposta = cliente.post("/api/calcular", json=pedido).json()
+    assert resposta["total_trechos_retos"] == 15.5
+    assert resposta["linhas"][0]["trechos"] == [1.2, 1.3, 3, 10]
+
+
+def test_soma_dos_trechos_vale_mais_que_a_quantidade(cliente):
+    """0,1 + 0,2 no JavaScript dá 0,30000000000000004; o servidor refaz a soma com Decimal."""
+    pedido = {"diametro": '3/4"', "itens": [
+        {"conexao_id": "trecho-reto", "material": "PVC", "quantidade": 0.30000000000000004, "trechos": [0.1, 0.2]}]}
+    assert cliente.post("/api/calcular", json=pedido).json()["total"] == 0.3

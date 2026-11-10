@@ -7,6 +7,7 @@ class ItemEntrada(BaseModel):
     conexao_id: str
     material: str
     quantidade: Decimal = Field(gt=0)
+    trechos: list[Decimal] = []
 
 
 class PedidoCalculo(BaseModel):
