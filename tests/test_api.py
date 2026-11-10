@@ -62,7 +62,9 @@ def test_salvar_nova_tabela_e_voltar_para_antiga(cliente):
 
 
 def test_saude_mostra_versao_ativa(cliente):
-    assert cliente.get("/api/saude").json() == {"status": "ok", "versao_ativa": 1, "ia_configurada": False}
+    assert cliente.get("/api/saude").json() == {
+        "status": "ok", "versao_ativa": 1, "ia_configurada": False, "admin_protegido": True}
+
 
 def test_valores_de_uma_conexao(cliente):
     dados = cliente.get("/api/tabela/joelho-90").json()
@@ -123,3 +125,15 @@ def test_usar_ia_forca_a_ia_mesmo_quando_as_regras_entendem(cliente, monkeypatch
     monkeypatch.setattr(httpx, "post", post_falso)
     cliente.post("/api/itens/texto", json={"texto": "5 joelhos 90", "usar_ia": True})
     assert chamadas == ["http://ia-falsa/interpretar"]
+
+
+def test_saude_informa_se_admin_tem_senha(cliente):
+    assert cliente.get("/api/saude").json()["admin_protegido"] is True
+
+
+def test_sem_admin_token_gerenciar_tabela_e_livre(cliente, monkeypatch):
+    monkeypatch.setattr(config, "ADMIN_TOKEN", "")
+    planilha = cliente.get("/api/tabelas/1/exportar").content
+    resposta = cliente.post("/api/tabelas/previa", files={"arquivo": ("nova.xlsx", planilha)})
+    assert resposta.status_code == 200
+    assert cliente.get("/api/saude").json()["admin_protegido"] is False

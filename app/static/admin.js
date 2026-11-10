@@ -73,4 +73,11 @@ $("versoes").addEventListener("click", async (e) => {
   }
 });
 
+async function mostrarSenhaSePrecisar() {
+  // a senha só aparece se o servidor tiver ADMIN_TOKEN configurado
+  const saude = await (await fetch("/api/saude")).json();
+  $("secao-senha").hidden = !saude.admin_protegido;
+}
+
+mostrarSenhaSePrecisar().catch(() => {});
 listarVersoes().catch((erro) => avisar(erro.message));

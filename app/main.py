@@ -31,7 +31,7 @@ def preparar_banco(repo: Repositorio) -> None:
 
 def exigir_admin(x_admin_token: str = Header(default="")) -> None:
     if not config.ADMIN_TOKEN:
-        raise HTTPException(503, "Defina ADMIN_TOKEN no servidor para gerenciar tabelas.")
+        return  # sem senha configurada: gerenciar a tabela fica livre
     if not hmac.compare_digest(x_admin_token, config.ADMIN_TOKEN):
         raise HTTPException(401, "Senha de administrador incorreta.")
 
@@ -92,6 +92,7 @@ def saude(r: Repositorio = Depends(repo)):
         "status": "ok",
         "versao_ativa": versao["id"] if versao else None,
         "ia_configurada": bool(config.IA_URL),
+        "admin_protegido": bool(config.ADMIN_TOKEN),
     }
 
 
