@@ -8,9 +8,10 @@ from fastapi.staticfiles import StaticFiles
 from app import config
 from app.dados.importador import comparar, importar_planilha
 from app.dados.repositorio import Repositorio
-from app.dominio.calculo import Item, Resultado, calcular
+from app.dominio.calculo import Item, Resultado, calcular, de_trechos
 from app.dominio.diametros import PADROES_MM
 from app.dominio.erros import ErroDominio
+from app.dominio.tabela import TRECHO_RETO
 from app.entrada.ia import IAIndisponivel, interpretar_com_ia
 from app.entrada.itens import Leitura
 from app.entrada.planilha_itens import gerar_modelo, ler_planilha_itens
@@ -60,13 +61,22 @@ def tabela_ativa(r: Repositorio):
     return versao, r.carregar_tabela(versao["id"])
 
 
+def montar_itens(pedido: PedidoCalculo) -> list[Item]:
+    """Converte o JSON em itens do domínio. Trecho reto com pedaços vira a soma dos pedaços."""
+    return [
+        de_trechos(i.material, i.trechos) if i.conexao_id == TRECHO_RETO and i.trechos
+        else Item(i.conexao_id, i.material, i.quantidade, tuple(i.trechos))
+        for i in pedido.itens
+    ]
+
+
 def resultado_json(resultado: Resultado) -> dict:
     return {
         "diametro": resultado.diametro,
         "linhas": [
             {"conexao_id": ln.conexao_id, "nome": ln.nome, "material": ln.material,
              "quantidade": float(ln.quantidade), "leq_unitario": float(ln.leq_unitario),
-             "subtotal": float(ln.subtotal)}
+             "subtotal": float(ln.subtotal), "trechos": [float(t) for t in ln.trechos]}
             for ln in resultado.linhas
         ],
         "total_conexoes": float(resultado.total_conexoes),
@@ -125,14 +135,14 @@ def obter_foto(versao_id: int, conexao_id: str, material: str, r: Repositorio = 
 @app.post("/api/calcular")
 def api_calcular(pedido: PedidoCalculo, r: Repositorio = Depends(repo)):
     _, tabela = tabela_ativa(r)
-    itens = [Item(i.conexao_id, i.material, i.quantidade) for i in pedido.itens]
+    itens = montar_itens(pedido)
     return resultado_json(calcular(itens, pedido.diametro, tabela))
 
 
 @app.post("/api/memorial")
 def api_memorial(pedido: PedidoCalculo, r: Repositorio = Depends(repo)):
     versao, tabela = tabela_ativa(r)
-    itens = [Item(i.conexao_id, i.material, i.quantidade) for i in pedido.itens]
+    itens = montar_itens(pedido)
     if not itens:
         raise ErroDominio("Adicione pelo menos um item antes de gerar o memorial.")
     resultado = calcular(itens, pedido.diametro, tabela)
