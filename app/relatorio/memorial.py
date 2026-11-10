@@ -65,6 +65,8 @@ def gerar_memorial(resultado: Resultado, versao: str,
     for linha in resultado.linhas:
         if linha.conexao_id == TRECHO_RETO:
             texto = f"- Tubo {linha.material} {resultado.diametro}: {br(linha.quantidade)} m"
+        if len(linha.trechos) > 1:
+                texto += " (" + " + ".join(br(t) for t in linha.trechos) + ")"    
         else:
             texto = f"- {br(linha.quantidade, 0)} x {linha.nome} ({linha.material}) {resultado.diametro}"
         pdf.cell(0, 7, texto, new_x="LMARGIN", new_y="NEXT")
