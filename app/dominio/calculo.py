@@ -10,6 +10,7 @@ class Item:
     conexao_id: str
     material: str
     quantidade: Decimal
+    trechos: tuple[Decimal, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -20,6 +21,7 @@ class Linha:
     quantidade: Decimal
     leq_unitario: Decimal
     subtotal: Decimal
+    trechos: tuple[Decimal, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -31,16 +33,30 @@ class Resultado:
     total: Decimal
 
 
+def de_trechos(material: str, trechos: list[Decimal]) -> Item:
+    """Item de trecho reto montado a partir dos pedaços medidos: 1,20 + 1,30 + 3 + 10."""
+    return Item(TRECHO_RETO, material, sum(trechos, Decimal(0)), tuple(trechos))
+
+
 def agrupar(itens: list[Item]) -> list[Item]:
     """Soma as quantidades de itens repetidos (mesma conexão e mesmo material)."""
     somas: dict[tuple[str, str], Decimal] = {}
+    trechos: dict[tuple[str, str], tuple[Decimal, ...]] = {}
     for item in itens:
         chave = (item.conexao_id, item.material)
         somas[chave] = somas.get(chave, Decimal(0)) + item.quantidade
-    return [Item(c, m, q) for (c, m), q in somas.items()]
-
+        # um trecho reto sem lista de pedaços conta como um pedaço só
+        pedacos = item.trechos or ((item.quantidade,) if item.conexao_id == TRECHO_RETO else ())
+        trechos[chave] = trechos.get(chave, ()) + pedacos
+    return [Item(c, m, q, trechos[(c, m)]) for (c, m), q in somas.items()]
 
 def validar_item(item: Item) -> None:
+    if item.trechos and item.conexao_id != TRECHO_RETO:
+        raise ErroDominio("Só o trecho reto pode ser informado em pedaços.")
+    
+    if any(trecho <= 0 for trecho in item.trechos):
+        raise ErroDominio("Cada trecho reto precisa ter comprimento maior que zero.")
+        
     if item.quantidade <= 0:
         raise ErroDominio("A quantidade precisa ser maior que zero.")
     eh_inteiro = item.quantidade == item.quantidade.to_integral_value()
@@ -65,6 +81,7 @@ def calcular(itens: list[Item], diametro: str, tabela: TabelaEquivalentes) -> Re
                 quantidade=item.quantidade,
                 leq_unitario=leq,
                 subtotal=item.quantidade * leq,
+                trechos=item.trechos,
             )
         )
 
