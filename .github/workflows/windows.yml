@@ -1,0 +1,71 @@
+name: Executável Windows
+
+on:
+  workflow_dispatch:          # botão "Run workflow" na aba Actions
+  release:
+    types: [published]        # toda release ganha o zip anexado
+  pull_request:
+    paths:
+      - desktop.py
+      - calculadora.spec
+      - docs/LEIA-ME-windows.txt
+      - .github/workflows/windows.yml
+
+permissions:
+  contents: write             # para anexar o zip na release
+
+jobs:
+  executavel:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt pyinstaller==6.22.3
+      - run: pyinstaller --noconfirm calculadora.spec
+
+      - name: Testar o executável (Exercício 5 = 17,80 m)
+        shell: pwsh
+        run: |
+          $env:CALC_PORTA = "8765"
+          $env:CALC_SEM_NAVEGADOR = "1"
+          $env:LOCALAPPDATA = "$env:RUNNER_TEMP\appdata"
+          $processo = Start-Process -FilePath "dist\CalculadoraHidraulica.exe" -PassThru
+          $pronto = $false
+          for ($i = 0; $i -lt 90; $i++) {
+            try { Invoke-RestMethod http://127.0.0.1:8765/api/saude | Out-Null; $pronto = $true; break }
+            catch { Start-Sleep -Seconds 1 }
+          }
+          if (-not $pronto) { throw "O executável não respondeu em 90 segundos." }
+          $pedido = '{"diametro": "3/4\"", "itens": [
+            {"conexao_id": "saida-entrada-de-canalizacao", "material": "PVC", "quantidade": 1},
+            {"conexao_id": "joelho-90", "material": "PVC", "quantidade": 5},
+            {"conexao_id": "registro-de-gaveta-aberto", "material": "Metal", "quantidade": 2},
+            {"conexao_id": "trecho-reto", "material": "PVC", "quantidade": 10.7,
+             "trechos": [0.3, 1.5, 3, 2, 3, 0.5, 0.2, 0.2]}]}'
+          $resposta = Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8765/api/calcular `
+            -ContentType "application/json" -Body $pedido
+          Stop-Process -Id $processo.Id
+          if ($resposta.total -ne 17.8) { throw "Esperava 17,8 m e veio $($resposta.total)" }
+          Write-Host "Exercício 5 no executável: $($resposta.total) m"
+
+      - name: Montar o zip
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path pacote | Out-Null
+          Copy-Item dist\CalculadoraHidraulica.exe pacote\
+          Copy-Item docs\LEIA-ME-windows.txt pacote\LEIA-ME.txt
+          Compress-Archive -Path pacote\* -DestinationPath CalculadoraHidraulica-windows.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CalculadoraHidraulica-windows
+          path: CalculadoraHidraulica-windows.zip
+
+      - name: Anexar o zip à release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload ${{ github.event.release.tag_name }} CalculadoraHidraulica-windows.zip --clobber
