@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório - Calculadora de Comprimento Equivalente</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  :root { --azul: #1f4e79; --cinza: #f2f4f7; --borda: #c9d1db; }
+  body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 10pt; line-height: 1.45; color: #1a1a1a; background: #fff; margin: 0; }
+  h1 { font-size: 17pt; color: var(--azul); margin: 0 0 4pt; }
+  h2 { font-size: 13pt; color: var(--azul); border-bottom: 1.5pt solid var(--azul); padding-bottom: 2pt; margin: 18pt 0 6pt; page-break-after: avoid; }
+  h3 { font-size: 11pt; margin: 12pt 0 4pt; page-break-after: avoid; }
+  p { margin: 4pt 0; text-align: justify; }
+  table { width: 100%; border-collapse: collapse; margin: 6pt 0 8pt; font-size: 9pt; page-break-inside: auto; }
+  tr { page-break-inside: avoid; }
+  th, td { border: 0.6pt solid var(--borda); padding: 3pt 5pt; vertical-align: top; text-align: left; }
+  th { background: var(--azul); color: #fff; font-weight: bold; }
+  tbody tr:nth-child(even) td { background: var(--cinza); }
+  code, .mono { font-family: "DejaVu Sans Mono", monospace; font-size: 8.6pt; background: var(--cinza); padding: 0 2pt; border-radius: 2pt; }
+  pre { font-family: "DejaVu Sans Mono", monospace; font-size: 8.4pt; background: var(--cinza); border: 0.6pt solid var(--borda); padding: 6pt; white-space: pre-wrap; page-break-inside: avoid; }
+  ul, ol { margin: 3pt 0 3pt 16pt; padding: 0; }
+  li { margin: 1.5pt 0; }
+  .capa { border: 1.5pt solid var(--azul); padding: 10pt 12pt; margin-bottom: 10pt; }
+  .capa .inst { font-size: 9pt; color: #444; text-transform: uppercase; letter-spacing: .5pt; }
+  .ident td:first-child { width: 28%; font-weight: bold; background: var(--cinza); }
+  .formula { text-align: center; font-size: 12pt; margin: 8pt 0; font-weight: bold; }
+  .nota { border-left: 3pt solid var(--azul); background: var(--cinza); padding: 5pt 8pt; margin: 6pt 0; }
+  figure { margin: 8pt 0; text-align: center; page-break-inside: avoid; }
+  figure img { max-width: 100%; max-height: 105mm; border: 0.6pt solid var(--borda); }
+  figcaption { font-size: 8.6pt; color: #444; margin-top: 3pt; }
+  .quebra { page-break-before: always; }
+  .ok { color: #1b6e2b; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="capa">
+  <div class="inst">Universidade de Vassouras - Campus Vassouras · Semestre 2026.2</div>
+  <h1>Relatório de Atividades Práticas</h1>
+  <div style="font-size:12pt;font-weight:bold;">Desenvolvimento de Software: Calculadora de Comprimento Equivalente</div>
+  <div style="margin-top:4pt;color:#444;">Relatório de ponta a ponta: do primeiro commit à entrega, com ferramentas, arquitetura, versionamento, testes, deploy e validação.</div>
+</div>
+
+<table class="ident">
+  <tr><td>Aluno</td><td>Lucas Santos Martins Ferreira</td></tr>
+  <tr><td>Matrícula</td><td>202411046</td></tr>
+  <tr><td>Curso</td><td>Engenharia de Software</td></tr>
+  <tr><td>Unidade curricular</td><td>Fenômenos de Transporte (P2)</td></tr>
+  <tr><td>Docente</td><td>Adauri Silveira Rodrigues Júnior</td></tr>
+  <tr><td>Versão do software</td><td>v1.3.0 (15/11/2026)</td></tr>
+  <tr><td>Acesso online</td><td>https://calc-hidraulica.discloud.dev</td></tr>
+  <tr><td>Código-fonte</td><td>https://github.com/LucasSMFerreira/calc-comprimento-equivalente (licença MIT)</td></tr>
+</table>
+
+<h2>1. Descrição do desafio</h2>
+<p>Cada conexão de uma instalação hidráulica (joelhos, tês, registros, válvulas) provoca uma perda de carga localizada. O <b>comprimento equivalente</b> é o comprimento de tubo reto, de mesmo diâmetro, que causaria a mesma perda. O desafio foi desenvolver um software aberto que some esses comprimentos a partir da tabela da disciplina (planilha <i>1 Perda de Carga Localizada.xlsx</i>), para auxiliar estudantes e profissionais em Fenômenos de Transporte, Hidráulica e Instalações.</p>
+<div class="formula">L<sub>total</sub> = Σ (quantidade<sub>i</sub> × L<sub>eq unitário, i</sub>)</div>
+
+<h2>2. Objetivos</h2>
+<ul>
+  <li>Automatizar o cálculo do comprimento equivalente total com precisão, sem erros de arredondamento.</li>
+  <li>Guardar a tabela do professor em um banco de dados interno, com versões que podem ser trocadas e revertidas.</li>
+  <li>Oferecer uma interface simples: escolher o diâmetro, tocar nas conexões e ver o total.</li>
+  <li>Gerar um memorial de cálculo em PDF (requisito bônus).</li>
+  <li>Aplicar boas práticas de engenharia de software: Clean Code, testes automatizados, integração contínua e versionamento com Git e GitHub.</li>
+</ul>
+
+<h2>3. Requisitos e como foram atendidos</h2>
+<table>
+  <thead><tr><th style="width:30%">Requisito do enunciado</th><th>Como foi atendido</th></tr></thead>
+  <tbody>
+    <tr><td>Entrada: diâmetro em mm ou polegadas</td><td>Seletor com os 15 diâmetros da planilha (1/4" a 14") e conversão para mm. O material (PVC ou Metal) é escolhido por item.</td></tr>
+    <tr><td>Entrada: componentes e quantidades</td><td>Cartões com a foto de cada uma das 35 conexões (fotos extraídas da própria planilha), entrada por planilha modelo (.xlsx), por texto livre e, opcionalmente, por IA local. Toda entrada indireta passa por uma tela de confirmação.</td></tr>
+    <tr><td>Back-end com banco de dados interno alimentado pela planilha</td><td>SQLite com versões da tabela: importação, prévia das mudanças, ativação, reversão e exportação para .xlsx.</td></tr>
+    <tr><td>Saída: comprimento equivalente total</td><td>Total em metros com detalhamento por item (quantidade × valor unitário = subtotal).</td></tr>
+    <tr><td>Bônus: memorial de cálculo em PDF</td><td>PDF com dados do projeto, tabela de itens, total, lista de compras e versão da tabela usada.</td></tr>
+    <tr><td>Código aberto</td><td>Repositório público no GitHub com licença MIT.</td></tr>
+    <tr><td>Clean Code: separar física, banco e interface</td><td>Camadas independentes (seção 5). A física não conhece web nem banco.</td></tr>
+    <tr><td>Pedido do professor após a apresentação</td><td>Caixa para somar trechos retos (v1.2.0) e gestão da tabela sem senha (v1.1.0).</td></tr>
+  </tbody>
+</table>
+
+<h2>4. Ferramentas e tecnologias</h2>
+<table>
+  <thead><tr><th style="width:24%">Ferramenta</th><th style="width:16%">Versão</th><th>Para que foi usada</th></tr></thead>
+  <tbody>
+    <tr><td>Python</td><td>3.12</td><td>Linguagem do back-end, dos testes e do executável.</td></tr>
+    <tr><td>FastAPI + Pydantic</td><td>0.162.0</td><td>API REST: cálculo, memorial, leitura de itens e gestão da tabela. O Pydantic valida as entradas.</td></tr>
+    <tr><td>Uvicorn</td><td>0.54.0</td><td>Servidor web que roda a API.</td></tr>
+    <tr><td>SQLite</td><td>embutido no Python</td><td>Banco interno: versões, diâmetros, conexões, valores e fotos.</td></tr>
+    <tr><td>openpyxl</td><td>3.1.5</td><td>Ler a planilha do professor (inclusive as imagens), ler a planilha de itens e exportar a tabela.</td></tr>
+    <tr><td>Pillow</td><td>12.3.0</td><td>Tratar as fotos das conexões.</td></tr>
+    <tr><td>RapidFuzz</td><td>3.14.6</td><td>Reconhecer nomes de conexões escritos de formas diferentes ("joelho 90", "cotovelo de 90 graus").</td></tr>
+    <tr><td>fpdf2</td><td>2.9.0</td><td>Gerar o memorial de cálculo em PDF.</td></tr>
+    <tr><td>HTML, CSS e JavaScript</td><td>sem framework</td><td>Interface leve, que funciona no celular.</td></tr>
+    <tr><td>Ollama (qwen2.5:1.5b)</td><td>modelo local</td><td>IA opcional, rodando no homelab, que só transforma frases em itens. A IA nunca calcula.</td></tr>
+    <tr><td>pytest</td><td>9.1.1</td><td>70 testes automatizados.</td></tr>
+    <tr><td>Ruff</td><td>0.17.3</td><td>Linter e padronização do código.</td></tr>
+    <tr><td>Git + GitHub</td><td>-</td><td>Versionamento, issues, pull requests, releases e proteção da branch main.</td></tr>
+    <tr><td>GitHub Actions</td><td>-</td><td>CI (testes e lint a cada PR) e geração do executável Windows.</td></tr>
+    <tr><td>GitHub CLI (gh)</td><td>-</td><td>Criar issues, PRs e releases pelo terminal.</td></tr>
+    <tr><td>Discloud</td><td>-</td><td>Hospedagem do site em https://calc-hidraulica.discloud.dev.</td></tr>
+    <tr><td>Homelab Ubuntu Server + Tailscale Funnel</td><td>26.04</td><td>Servidor próprio que roda a IA, exposto com HTTPS e protegido por token.</td></tr>
+    <tr><td>PyInstaller</td><td>6.22.3</td><td>Empacotar a calculadora em um único .exe para Windows.</td></tr>
+    <tr><td>VS Code e WSL/Linux</td><td>-</td><td>Ambiente de desenvolvimento.</td></tr>
+  </tbody>
+</table>
+
+<h2>5. Arquitetura e lógica</h2>
+<table>
+  <thead><tr><th style="width:24%">Pasta</th><th>Responsabilidade</th></tr></thead>
+  <tbody>
+    <tr><td><code>app/dominio</code></td><td>Física pura: tabela, diâmetros, regras e cálculo. Não conhece web nem banco.</td></tr>
+    <tr><td><code>app/dados</code></td><td>Importar a planilha do professor e guardar as versões no SQLite.</td></tr>
+    <tr><td><code>app/entrada</code></td><td>Ler itens de planilha, de texto e da IA.</td></tr>
+    <tr><td><code>app/relatorio</code></td><td>Memorial de cálculo em PDF.</td></tr>
+    <tr><td><code>app/static</code></td><td>Interface (HTML, CSS, JavaScript).</td></tr>
+    <tr><td><code>app/main.py</code></td><td>API FastAPI que liga as camadas.</td></tr>
+    <tr><td><code>servico_ia</code></td><td>Serviço com token na frente do Ollama, rodando no homelab.</td></tr>
+    <tr><td><code>desktop.py</code></td><td>Ponto de entrada da versão Windows: sobe o servidor local e abre o navegador.</td></tr>
+  </tbody>
+</table>
+<h3>Decisões de lógica</h3>
+<ul>
+  <li><b>Precisão:</b> todo cálculo usa <code>Decimal</code>, então 0,1 + 0,2 dá exatamente 0,3.</li>
+  <li><b>Validação no domínio:</b> quantidade maior que zero, peças inteiras, limite de peças e trechos retos positivos. A API apenas repassa os erros.</li>
+  <li><b>Itens repetidos são agrupados:</b> dois "joelho 90° PVC" viram uma linha com a soma das quantidades.</li>
+  <li><b>Trechos retos:</b> o usuário digita cada trecho (0,3 + 1,5 + 3 ...) e a calculadora soma. O total aparece no memorial com a lista de trechos.</li>
+  <li><b>Tabela versionada:</b> importar uma planilha nova cria uma versão. Antes de ativar, a prévia mostra o que mudou. Dá para voltar a qualquer versão.</li>
+  <li><b>IA só interpreta:</b> a IA devolve JSON validado por esquema. Se ela estiver fora do ar, o leitor de texto por regras assume. O usuário sempre confirma antes de calcular.</li>
+  <li><b>Interface sem condição de corrida:</b> cada pedido recebe um número (<code>pedidoAtual</code>) e respostas antigas são descartadas.</li>
+  <li><b>Segredos só no <code>.env</code>:</b> tokens nunca entram no código nem no Git.</li>
+</ul>
+
+<h2 class="quebra">6. Versionamento</h2>
+<p>O projeto foi versionado com Git e hospedado no GitHub. Cada funcionalidade seguiu o mesmo fluxo, para que o histórico conte a história do trabalho:</p>
+<pre>issue  →  branch  →  commits  →  pull request  →  CI verde  →  squash merge na main  →  release</pre>
+<h3>Regras adotadas</h3>
+<ul>
+  <li><b>Issues:</b> 14 issues, uma por etapa (configuração, importação, motor, banco, API, interface, deploy, entradas, IA, memorial, entrega e as melhorias pedidas pelo professor). Todas fechadas.</li>
+  <li><b>Branches com nome padronizado:</b> <code>feat/3-motor-de-calculo</code>, <code>fix/lacuna-app-js</code>, <code>chore/7-deploy-discloud</code>, <code>docs/11-entrega</code>. O número liga a branch à issue.</li>
+  <li><b>Conventional Commits:</b> o prefixo diz o tipo da mudança: <code>feat</code> (funcionalidade), <code>fix</code> (correção), <code>test</code>, <code>docs</code>, <code>chore</code> (configuração).</li>
+  <li><b>Pull requests com modelo:</b> o que muda, como testar e "Closes #N", que fecha a issue no merge.</li>
+  <li><b>Squash merge:</b> cada PR vira um único commit na main, com o número do PR. A main ficou com 23 commits limpos.</li>
+  <li><b>Branch main protegida:</b> não aceita push direto, exige o CI verde e exige a branch atualizada. A regra vale também para o administrador (<code>enforce_admins</code>).</li>
+  <li><b>Versionamento semântico (SemVer):</b> MAJOR.MINOR.PATCH. <code>v1.0.0</code> marcou a entrega da P2. Funcionalidades novas sobem o MINOR e correções sobem o PATCH.</li>
+</ul>
+
+<h3>Integração contínua (GitHub Actions)</h3>
+<ul>
+  <li><b>ci.yml (job "testes"):</b> a cada PR roda <code>ruff check</code> e os 70 testes do <code>pytest</code>. O PR só pode entrar com tudo verde.</li>
+  <li><b>windows.yml:</b> numa máquina Windows, gera o .exe com o PyInstaller, abre o executável, confere que o Exercício 5 dá 17,80 m e só então monta o zip. Em toda release o zip é anexado automaticamente.</li>
+  <li>O PR #16 ("teste: ci vermelho") foi aberto de propósito com um teste quebrado, para comprovar que a proteção bloqueia o merge. Ele foi fechado sem merge.</li>
+</ul>
+
+<h3>Onde conferir as provas do versionamento</h3>
+<p>Tudo o que está descrito nesta seção pode ser conferido publicamente no repositório:</p>
+<table>
+  <thead><tr><th style="width:26%">Prova</th><th>Link</th></tr></thead>
+  <tbody>
+    <tr><td>Repositório</td><td><a href="https://github.com/LucasSMFerreira/calc-comprimento-equivalente">github.com/LucasSMFerreira/calc-comprimento-equivalente</a></td></tr>
+    <tr><td>Histórico de commits</td><td><a href="https://github.com/LucasSMFerreira/calc-comprimento-equivalente/commits/main">.../commits/main</a></td></tr>
+    <tr><td>Issues (planejamento)</td><td><a href="https://github.com/LucasSMFerreira/calc-comprimento-equivalente/issues?q=is%3Aissue">.../issues?q=is:issue</a></td></tr>
+    <tr><td>Pull requests</td><td><a href="https://github.com/LucasSMFerreira/calc-comprimento-equivalente/pulls?q=is%3Apr">.../pulls?q=is:pr</a></td></tr>
+    <tr><td>PR bloqueado pelo CI (#16)</td><td><a href="https://github.com/LucasSMFerreira/calc-comprimento-equivalente/pull/16">.../pull/16</a></td></tr>
+    <tr><td>Releases e tags</td><td><a href="https://github.com/LucasSMFerreira/calc-comprimento-equivalente/releases">.../releases</a></td></tr>
+    <tr><td>Execuções do CI</td><td><a href="https://github.com/LucasSMFerreira/calc-comprimento-equivalente/actions">.../actions</a></td></tr>
+    <tr><td>Branches</td><td><a href="https://github.com/LucasSMFerreira/calc-comprimento-equivalente/branches/all">.../branches/all</a></td></tr>
+  </tbody>
+</table>
+
+<h3>Releases</h3>
+<table>
+  <thead><tr><th style="width:13%">Versão</th><th style="width:15%">Data</th><th>Conteúdo</th></tr></thead>
+  <tbody>
+    <tr><td>v0.1.0</td><td>31/10/2026</td><td>Motor de cálculo: importação da planilha e cálculo com Decimal.</td></tr>
+    <tr><td>v0.2.0</td><td>03/11/2026</td><td>Calculadora no ar: banco, API, interface e deploy no Discloud.</td></tr>
+    <tr><td>v0.3.0</td><td>03/11/2026</td><td>Entrada por planilha e por texto.</td></tr>
+    <tr><td>v0.4.0</td><td>03/11/2026</td><td>IA local no homelab (apenas tag).</td></tr>
+    <tr><td>v0.5.0</td><td>03/11/2026</td><td>Memorial de cálculo em PDF.</td></tr>
+    <tr><td>v0.5.1</td><td>03/11/2026</td><td>Correção: total não aparecia na interface.</td></tr>
+    <tr><td>v1.0.0</td><td>03/11/2026</td><td>Entrega da P2: README, validação e capturas de tela.</td></tr>
+    <tr><td>v1.1.0</td><td>10/11/2026</td><td>Gerenciar a tabela sem senha de administrador.</td></tr>
+    <tr><td>v1.2.0</td><td>10/11/2026</td><td>Caixa para somar trechos retos (pedido do professor).</td></tr>
+    <tr><td>v1.3.0</td><td>15/11/2026</td><td>Versão Windows: executável que roda sem instalar.</td></tr>
+  </tbody>
+</table>
+
+<h3>Pull requests integrados</h3>
+<table>
+  <thead><tr><th style="width:8%">PR</th><th style="width:13%">Data</th><th style="width:40%">Título</th><th>Branch</th></tr></thead>
+  <tbody>
+    <tr><td>#15</td><td>30/10</td><td>chore: configura repositório, CI e licença</td><td><code>chore/1-configura-repositorio</code></td></tr>
+    <tr><td>#17</td><td>30/10</td><td>docs: selo do CI no README</td><td><code>docs/selo-ci</code></td></tr>
+    <tr><td>#18</td><td>31/10</td><td>feat: importa a planilha de comprimentos equivalentes</td><td><code>feat/2-importa-planilha</code></td></tr>
+    <tr><td>#19</td><td>31/10</td><td>test: toda linha da planilha tem foto</td><td><code>test/fotos-da-planilha</code></td></tr>
+    <tr><td>#20</td><td>31/10</td><td>feat: motor de cálculo</td><td><code>feat/3-motor-de-calculo</code></td></tr>
+    <tr><td>#21</td><td>01/11</td><td>feat: salva versões da tabela em SQLite</td><td><code>feat/4-banco-versoes</code></td></tr>
+    <tr><td>#22</td><td>01/11</td><td>feat: API de cálculo e gestão da tabela</td><td><code>feat/5-api</code></td></tr>
+    <tr><td>#23</td><td>01/11</td><td>feat: saúde com versão ativa e valores por conexão</td><td><code>feat/saude-e-conexao</code></td></tr>
+    <tr><td>#24</td><td>01/11</td><td>feat: interface de calculadora</td><td><code>feat/6-interface</code></td></tr>
+    <tr><td>#25</td><td>01/11</td><td>chore: deploy no Discloud com subdomínio</td><td><code>chore/7-deploy-discloud</code></td></tr>
+    <tr><td>#26</td><td>03/11</td><td>feat: lê itens de planilha e de texto</td><td><code>feat/8-entrada-planilha-texto</code></td></tr>
+    <tr><td>#27</td><td>03/11</td><td>feat: interpreta texto com IA local no homelab</td><td><code>feat/9-ia-local</code></td></tr>
+    <tr><td>#28</td><td>03/11</td><td>chore: ignora configurações do VS Code</td><td><code>chore/ignora-vscode</code></td></tr>
+    <tr><td>#29</td><td>03/11</td><td>fix: total não aparecia por lacuna no app.js</td><td><code>fix/lacuna-app-js</code></td></tr>
+    <tr><td>#30</td><td>03/11</td><td>docs: README, relatório e entrega</td><td><code>docs/11-entrega</code></td></tr>
+    <tr><td>#31</td><td>03/11</td><td>renomeia captura de tela para confirmacao-ia.png</td><td>(editor web do GitHub)</td></tr>
+    <tr><td>#33</td><td>10/11</td><td>feat: gerenciar tabela sem senha</td><td><code>feat/32-tabela-sem-senha</code></td></tr>
+    <tr><td>#35</td><td>10/11</td><td>feat: caixa para somar trechos retos</td><td><code>feat/34-soma-trechos-retos</code></td></tr>
+    <tr><td>#37</td><td>15/11</td><td>feat: executável Windows para rodar sem instalar</td><td><code>feat/executavel-windows</code></td></tr>
+  </tbody>
+</table>
+
+<h3>Problemas de versionamento e o que aprendi</h3>
+<table>
+  <thead><tr><th style="width:34%">Problema</th><th>Solução</th></tr></thead>
+  <tbody>
+    <tr><td>Commits feitos direto na main local</td><td><code>git switch -c nova-branch</code> leva os commits para uma branch e <code>git branch -f main origin/main</code> devolve a main ao estado do GitHub.</td></tr>
+    <tr><td>Push recusado na main protegida</td><td>A proteção funcionou como esperado. As mudanças seguiram por branch e PR.</td></tr>
+    <tr><td>Tag de release criada no commit errado</td><td>A release e a tag foram apagadas com <code>gh release delete --cleanup-tag</code> e recriadas no commit da main.</td></tr>
+    <tr><td>PR "desatualizado com a main"</td><td><code>git rebase origin/main</code> e <code>git push --force-with-lease</code>, que só força se ninguém mais mexeu na branch.</td></tr>
+    <tr><td>Commit do memorial feito direto na main (fe80780 e 54a43de)</td><td>Ficou registrado no histórico. A issue #10 foi fechada com a explicação, e a proteção passou a valer também para o administrador.</td></tr>
+    <tr><td>Erros de lint (F811, F821) e testes falhando</td><td>O CI barrou o merge até a correção. Foi a prova prática de por que o CI existe.</td></tr>
+  </tbody>
+</table>
+
+<h2 class="quebra">7. Deploy e distribuição</h2>
+<ul>
+  <li><b>Site:</b> Discloud (<code>discloud.config</code>, tipo site, porta 8080). O banco fica no <code>.discloudignore</code>, então um deploy novo não apaga as versões da tabela.</li>
+  <li><b>IA:</b> serviço FastAPI no homelab (Ubuntu Server) na frente do Ollama, exposto com Tailscale Funnel (HTTPS) e protegido por token. Sem a IA, a calculadora continua funcionando com o leitor por regras.</li>
+  <li><b>Windows:</b> <code>CalculadoraHidraulica.exe</code> gerado pelo PyInstaller no GitHub Actions. Roda sem instalar nada e sem internet. Os dados ficam em <code>%LOCALAPPDATA%\CalculadoraComprimentoEquivalente</code>. Essa versão também resolve redes com firewall que bloqueiam o site, como o Fortinet da faculdade.</li>
+</ul>
+
+<h2>8. Validação e resultados obtidos</h2>
+<table>
+  <thead><tr><th style="width:36%">Caso</th><th style="width:16%">Calculadora</th><th>Observação</th></tr></thead>
+  <tbody>
+    <tr><td>Exercício 5 dos slides (3/4")</td><td class="ok">17,80 m</td><td>Igual ao gabarito: 1 saída de canalização, 5 joelhos 90° PVC, 2 registros de gaveta e 10,7 m de trechos retos. Conferido nos testes e no próprio executável Windows.</td></tr>
+    <tr><td>Exemplo do slide 46 (Metal 1")</td><td>23,08 m</td><td>O slide mostra 30,8 m porque usa uma tabela antiga (joelho 90° Metal 1" = 0,8 m; na planilha é 0,94 m) e o valor 8,2 m, que é o do registro de globo. Trocando gaveta por globo, a calculadora dá 31,08 m.</td></tr>
+    <tr><td>Conferência da planilha</td><td>7 avisos</td><td>Valores suspeitos (curva de transposição Metal F21/G21, luva de redução, niple de redução Metal) e 6 saltos maiores que 3× entre diâmetros vizinhos (ex.: união 5"→6"). Registrados em <code>docs/validacao.md</code>.</td></tr>
+    <tr><td>Testes automatizados</td><td class="ok">70 passando</td><td>Cálculo, importação, banco, API, entradas, sanidade da planilha e versão desktop.</td></tr>
+  </tbody>
+</table>
+<div class="nota">Questão em aberto para o professor: a coluna em mm da planilha se refere ao diâmetro externo do PVC soldável ou ao DN? Os valores da tabela são indexados pela polegada; a escolha em mm aponta para a polegada correspondente.</div>
+
+<h2>9. Registro fotográfico</h2>
+<figure><img src="../img/calculadora.png"><figcaption>Figura 1 - Tela principal: diâmetro, cartões das conexões e total.</figcaption></figure>
+<figure><img src="../img/memorial.png"><figcaption>Figura 2 - Texto livre interpretado e tela de confirmação antes do cálculo.</figcaption></figure>
+<figure><img src="../img/confirmacao-ia.png"><figcaption>Figura 3 - Memorial de cálculo em PDF.</figcaption></figure>
+
+<h2>10. Como usar</h2>
+<ol>
+  <li><b>Online:</b> acesse https://calc-hidraulica.discloud.dev.</li>
+  <li><b>Windows sem internet:</b> extraia este zip e dê dois cliques em <code>CalculadoraHidraulica.exe</code>. Se o Windows avisar, clique em "Mais informações" e depois em "Executar assim mesmo".</li>
+  <li>Escolha o diâmetro (polegadas ou mm).</li>
+  <li>Toque nas conexões e ajuste as quantidades e o material, ou descreva em texto, ou importe a planilha modelo.</li>
+  <li>Some os trechos retos na caixa própria.</li>
+  <li>Veja o total e baixe o memorial em PDF.</li>
+</ol>
+
+<h2>11. Conclusão</h2>
+<p>O software atende a todos os requisitos do enunciado, inclusive o bônus do memorial em PDF, e incorporou as melhorias pedidas pelo professor depois da apresentação. Além do resultado de engenharia (o Exercício 5 confere com o gabarito), o trabalho exercitou o ciclo completo de desenvolvimento: planejamento em issues, código em camadas, testes automatizados, revisão por pull request, integração contínua, releases semânticas, deploy na nuvem, IA local em servidor próprio e distribuição como executável. O histórico do GitHub registra cada passo e pode ser auditado por qualquer pessoa em <a href="https://github.com/LucasSMFerreira/calc-comprimento-equivalente">github.com/LucasSMFerreira/calc-comprimento-equivalente</a>.</p>
+
+</body>
+</html>
