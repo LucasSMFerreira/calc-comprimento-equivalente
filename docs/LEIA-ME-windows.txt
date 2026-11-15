@@ -1,6 +1,6 @@
 CALCULADORA DE COMPRIMENTO EQUIVALENTE - VERSÃO WINDOWS
 Trabalho da P2 de Fenômenos de Transporte - Universidade de Vassouras
-Autor: Lucas Martins Ferreira
+Autor: Lucas Santos Martins Ferreira - Matrícula 202411046 - Engenharia de Software
 
 COMO USAR
 1. Extraia o zip (botão direito > Extrair tudo).
@@ -22,5 +22,11 @@ Copie o endereço que aparece na janela preta (http://127.0.0.1:...) e cole no n
 ONDE FICAM OS DADOS
 As versões da tabela ficam salvas em %LOCALAPPDATA%\CalculadoraComprimentoEquivalente.
 Para voltar ao estado inicial, apague essa pasta.
+
+RELATÓRIO DO TRABALHO
+O arquivo Relatorio-Calculadora.pdf, neste zip, conta o projeto de ponta a ponta:
+ferramentas, arquitetura, versionamento (issues, branches, pull requests, releases),
+testes, deploy e validação. Provas do versionamento no repositório:
+https://github.com/LucasSMFerreira/calc-comprimento-equivalente
 
 Versão online (mesma calculadora): https://calc-hidraulica.discloud.dev

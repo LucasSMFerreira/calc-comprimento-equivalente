@@ -9,6 +9,7 @@ on:
       - desktop.py
       - calculadora.spec
       - docs/LEIA-ME-windows.txt
+      - docs/Relatorio-Calculadora.pdf
       - .github/workflows/windows.yml
 
 permissions:
@@ -57,6 +58,7 @@ jobs:
           New-Item -ItemType Directory -Path pacote | Out-Null
           Copy-Item dist\CalculadoraHidraulica.exe pacote\
           Copy-Item docs\LEIA-ME-windows.txt pacote\LEIA-ME.txt
+          Copy-Item docs\Relatorio-Calculadora.pdf pacote\
           Compress-Archive -Path pacote\* -DestinationPath CalculadoraHidraulica-windows.zip
 
       - uses: actions/upload-artifact@v4

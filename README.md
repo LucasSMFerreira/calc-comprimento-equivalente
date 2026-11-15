@@ -71,4 +71,4 @@ Discloud (`discloud.config`). O banco fica no `.discloudignore`, então os deplo
 
 ## Licença
 
-MIT. Autor: Lucas Martins Ferreira.
+MIT. Autor: Lucas Santos Martins Ferreira.
