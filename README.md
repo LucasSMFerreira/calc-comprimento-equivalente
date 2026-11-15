@@ -49,11 +49,21 @@ com os valores da planilha `1 Perda de Carga Localizada.xlsx` (35 conexões, PVC
     pip install -r requirements-dev.txt
     cp .env.example .env
     python run.py            # http://127.0.0.1:8080
-    pytest -v                # 55 testes
+    pytest -v
 
 ## Validação
 
 O Exercício 5 dos slides (3/4") dá 17,80 m, igual ao gabarito. Detalhes em [docs/validacao.md](docs/validacao.md).
+
+## Versão para Windows
+
+Um executável que roda sem instalar nada e sem internet: baixe o `CalculadoraHidraulica-windows.zip`
+na [última release](https://github.com/LucasSMFerreira/calc-comprimento-equivalente/releases/latest),
+extraia e dê dois cliques em `CalculadoraHidraulica.exe`. A calculadora abre no navegador.
+
+O `.exe` é gerado pelo GitHub Actions numa máquina Windows (`.github/workflows/windows.yml`), a partir
+de `desktop.py` e `calculadora.spec`. Antes de gerar o zip, o workflow abre o executável e confere
+que o Exercício 5 dá 17,80 m.
 
 ## Deploy
 

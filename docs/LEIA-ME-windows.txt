@@ -1,0 +1,26 @@
+CALCULADORA DE COMPRIMENTO EQUIVALENTE - VERSÃO WINDOWS
+Trabalho da P2 de Fenômenos de Transporte - Universidade de Vassouras
+Autor: Lucas Martins Ferreira
+
+COMO USAR
+1. Extraia o zip (botão direito > Extrair tudo).
+2. Dê dois cliques em CalculadoraHidraulica.exe.
+3. Uma janela preta abre e, em alguns segundos, a calculadora aparece no navegador.
+4. Para fechar a calculadora, feche a janela preta.
+
+Não precisa instalar nada nem de internet: tudo roda no próprio computador.
+
+SE O WINDOWS MOSTRAR "O Windows protegeu o computador"
+O programa não tem assinatura digital paga, então o Windows avisa na primeira vez.
+Clique em "Mais informações" e depois em "Executar assim mesmo".
+O código é aberto e pode ser conferido em:
+https://github.com/LucasSMFerreira/calc-comprimento-equivalente
+
+SE O NAVEGADOR NÃO ABRIR SOZINHO
+Copie o endereço que aparece na janela preta (http://127.0.0.1:...) e cole no navegador.
+
+ONDE FICAM OS DADOS
+As versões da tabela ficam salvas em %LOCALAPPDATA%\CalculadoraComprimentoEquivalente.
+Para voltar ao estado inicial, apague essa pasta.
+
+Versão online (mesma calculadora): https://calc-hidraulica.discloud.dev
