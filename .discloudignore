@@ -8,3 +8,7 @@ tests/
 servico_ia/
 docs/
 data/calculadora.db
+desktop.py
+calculadora.spec
+build/
+dist/
